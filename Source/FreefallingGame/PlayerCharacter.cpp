@@ -36,7 +36,7 @@ APlayerCharacter::APlayerCharacter()
 	SphereComponent->BodyInstance.PositionSolverIterationCount = 16;
 	SphereComponent->BodyInstance.VelocitySolverIterationCount = 16;
 	SphereComponent->bShouldUpdatePhysicsVolume = true;
-	SphereComponent->SetupAttachment(RootComponent);
+	RootComponent = SphereComponent;
 
 	Model = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Player Model"));
 	const ConstructorHelpers::FObjectFinder<UStaticMesh> PlayerMeshFinder(TEXT("/Game/Models/Player/PlayerModel"));
@@ -52,6 +52,12 @@ APlayerCharacter::APlayerCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+
+	JetpackParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Jetpack Particles"));
+	const ConstructorHelpers::FObjectFinder<UParticleSystem> JetpackParticlesFinder(TEXT("/Game/Particles/Jetpack"));
+	JetpackParticles->SetTemplate(JetpackParticlesFinder.Object);
+	JetpackParticles->bAutoActivate = false;
+	JetpackParticles->SetupAttachment(SphereComponent);
 }
 
 // Called when the game starts or when spawned
@@ -144,10 +150,11 @@ void APlayerCharacter::MoveY(float AxisValue) {
 
 void APlayerCharacter::UseJetpack() {
 	if (CanUseJetpack) {
-		//SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
-		//SphereComponent->SetPhysicsLinearVelocity(SphereComponent->GetPhysicsLinearVelocity()/2.0f);
 		SphereComponent->SetPhysicsLinearVelocity(FVector::ForwardVector * (SphereComponent->GetPhysicsLinearVelocity() | FVector::ForwardVector));
 		SphereComponent->AddImpulse(JetpackPower*MovementInput.GetSafeNormal(), NAME_None, true);
+		JetpackParticles->SetWorldRotation(MovementInput.GetSafeNormal().Rotation());
+		JetpackParticles->Deactivate();
+		JetpackParticles->Activate();
 		CanUseJetpack = false;
 	}
 }
