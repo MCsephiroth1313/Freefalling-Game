@@ -25,11 +25,16 @@ public:
 
 	UFUNCTION() void BeginOverlap(class UPrimitiveComponent* thisguy, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	UFUNCTION() void EndOverlap(class UPrimitiveComponent* thisguy, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 	UFUNCTION() void MoveX(float AxisValue);
 	UFUNCTION() void MoveY(float AxisValue);
+	UFUNCTION() void UseJetpack();
+
+	UFUNCTION() void CheckCollisions(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Teleport(FVector NewLocation);
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void RedirectMomemtum(FVector Direction);
+	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Respawn();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USphereComponent* SphereComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UStaticMeshComponent* Model;
@@ -42,7 +47,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float AccelRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float MaxVelocity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") FVector Gravity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float JetpackPower;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") FVector RespawnPoint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") FVector MovementInput;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool CanUseJetpack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool Freeze;
+
 
 };

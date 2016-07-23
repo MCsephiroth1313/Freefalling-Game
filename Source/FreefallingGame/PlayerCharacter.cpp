@@ -13,13 +13,17 @@ APlayerCharacter::APlayerCharacter()
 	PlayerSize = 45.0f;
 	DefaultCameraDistance = 2000.0f;
 
-	AccelRate = 2500.0f;
-	MaxVelocity = 1000.0f;
+	AccelRate = 2000.0f;
+	MaxVelocity = 2000.0f;
 	Gravity = FVector(0.0f, 0.0f, -980.0f);
+	JetpackPower = 2000.0f;
+
+	CanUseJetpack = true;
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
 	SphereComponent->SetupAttachment(RootComponent);
 	SphereComponent->SetCollisionProfileName(TEXT("Pawn"));
+	SphereComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Ignore);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::BeginOverlap);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::EndOverlap);
 	SphereComponent->SetSimulatePhysics(true);
@@ -51,6 +55,9 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	RespawnPoint = GetActorLocation();
+	
 	SphereComponent->InitSphereRadius(PlayerSize);
 	SpringArm->AddLocalOffset(DefaultCameraDistance*FVector::RightVector);
 	SpringArm->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
@@ -66,22 +73,48 @@ void APlayerCharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	if (Freeze) {
+		SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+		return;
+	}
 
 	// Clamp movement input.
 	MovementInput = MovementInput.GetClampedToMaxSize(1.0f);
 
+	// Check collision with the ground.
+	CheckCollisions(DeltaTime);
+
 	// Apply acceleration due to movement inputs.
-	SphereComponent->AddForce(MovementInput.X*AccelRate*FVector::ForwardVector, NAME_None, true);
+	if (FMath::Abs(SphereComponent->GetPhysicsLinearVelocity().X) / MaxVelocity <= 1.0f) {
+		SphereComponent->AddForce(MovementInput.X*AccelRate*FVector::ForwardVector, NAME_None, true);
+	}
 
 	// Apply smooth deceleration.
 	FVector Velocity = SphereComponent->GetPhysicsLinearVelocity();
 	Velocity.Z = 0.0f;
-	float mult = FMath::Lerp(FMath::Pow(Velocity.Size() / MaxVelocity,4), FMath::Pow(Velocity.Size() / MaxVelocity, 0.125f),FMath::Clamp(Velocity.Size()/MaxVelocity,0.0f,1.0f));
+	float mult = FMath::Lerp(FMath::Pow(Velocity.Size() / MaxVelocity,16), 1.0f,FMath::Clamp(FMath::Pow(Velocity.Size()/MaxVelocity,4),0.0f,1.0f));
 	SphereComponent->AddForce(-Velocity.GetSafeNormal()*AccelRate*mult, NAME_None, true);
 
 	// Apply gravity.
 	SphereComponent->AddForce(Gravity, NAME_None, true);
 
+}
+
+void APlayerCharacter::CheckCollisions(float DeltaTime)
+{
+
+	FHitResult TraceResult;
+	FCollisionShape TraceShape = FCollisionShape::MakeSphere(PlayerSize/2.0f);
+	GetWorld()->SweepSingleByChannel(TraceResult, GetActorLocation(), GetActorLocation() + (PlayerSize + 10.0f)*Gravity.GetSafeNormal(), FQuat::Identity, ECC_Visibility, TraceShape);
+	if (TraceResult.bBlockingHit && (Gravity.GetSafeNormal() | TraceResult.ImpactNormal) < -0.7f) {
+		Respawn();
+	}
+}
+
+void APlayerCharacter::Respawn() {
+	SetActorLocation(RespawnPoint, false, nullptr, ETeleportType::TeleportPhysics);
+	SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+	CanUseJetpack = true;
 }
 
 void APlayerCharacter::Teleport(FVector NewLocation) {
@@ -99,6 +132,7 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 	Super::SetupPlayerInputComponent(InputComponent);
 	InputComponent->BindAxis("MoveX", this, &APlayerCharacter::MoveX);
 	InputComponent->BindAxis("MoveY", this, &APlayerCharacter::MoveY);
+	InputComponent->BindAction("Jetpack", IE_Pressed, this, &APlayerCharacter::UseJetpack);
 }
 
 void APlayerCharacter::MoveX(float AxisValue) {
@@ -107,6 +141,16 @@ void APlayerCharacter::MoveX(float AxisValue) {
 
 void APlayerCharacter::MoveY(float AxisValue) {
 	MovementInput.Z = AxisValue;
+}
+
+void APlayerCharacter::UseJetpack() {
+	if (CanUseJetpack) {
+		//SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+		//SphereComponent->SetPhysicsLinearVelocity(SphereComponent->GetPhysicsLinearVelocity()/2.0f);
+		SphereComponent->SetPhysicsLinearVelocity(FVector::ForwardVector * (SphereComponent->GetPhysicsLinearVelocity() | FVector::ForwardVector));
+		SphereComponent->AddImpulse(JetpackPower*MovementInput.GetSafeNormal(), NAME_None, true);
+		CanUseJetpack = false;
+	}
 }
 
 void APlayerCharacter::BeginOverlap(UPrimitiveComponent * thisguy, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
