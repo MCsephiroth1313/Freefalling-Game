@@ -21,7 +21,7 @@ APlayerCharacter::APlayerCharacter()
 	CanUseJetpack = true;
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
-	SphereComponent->SetupAttachment(RootComponent);
+	SphereComponent->InitSphereRadius(PlayerSize);
 	SphereComponent->SetCollisionProfileName(TEXT("Pawn"));
 	SphereComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Ignore);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::BeginOverlap);
@@ -36,6 +36,7 @@ APlayerCharacter::APlayerCharacter()
 	SphereComponent->BodyInstance.PositionSolverIterationCount = 16;
 	SphereComponent->BodyInstance.VelocitySolverIterationCount = 16;
 	SphereComponent->bShouldUpdatePhysicsVolume = true;
+	SphereComponent->SetupAttachment(RootComponent);
 
 	Model = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Player Model"));
 	const ConstructorHelpers::FObjectFinder<UStaticMesh> PlayerMeshFinder(TEXT("/Game/Models/Player/PlayerModel"));
@@ -45,6 +46,8 @@ APlayerCharacter::APlayerCharacter()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->bDoCollisionTest = false;
+	SpringArm->AddLocalOffset(DefaultCameraDistance*FVector::RightVector);
+	SpringArm->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
 	SpringArm->SetupAttachment(SphereComponent);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -57,10 +60,6 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	RespawnPoint = GetActorLocation();
-	
-	SphereComponent->InitSphereRadius(PlayerSize);
-	SpringArm->AddLocalOffset(DefaultCameraDistance*FVector::RightVector);
-	SpringArm->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 }
 
