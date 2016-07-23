@@ -11,6 +11,7 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PlayerSize = 45.0f;
+	DefaultCameraDistance = 1000.0f;
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
 	SphereComponent->SetupAttachment(RootComponent);
@@ -33,6 +34,13 @@ APlayerCharacter::APlayerCharacter()
 	Model->SetStaticMesh(PlayerMeshFinder.Object);
 	Model->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Model->SetupAttachment(SphereComponent);
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->bDoCollisionTest = false;
+	SpringArm->SetupAttachment(SphereComponent);
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 }
 
 // Called when the game starts or when spawned
@@ -40,6 +48,8 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SphereComponent->InitSphereRadius(PlayerSize);
+	SpringArm->AddLocalOffset(DefaultCameraDistance*FVector::RightVector);
+	SpringArm->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 }
 
@@ -51,14 +61,26 @@ void print(FString text) {
 void APlayerCharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-	print("alive");
+
+	// Clamp movement input.
+	MovementInput = MovementInput.GetClampedToMaxSize(1.0f);
+	print(MovementInput.ToString());
 }
 
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	Super::SetupPlayerInputComponent(InputComponent);
+	InputComponent->BindAxis("MoveX", this, &APlayerCharacter::MoveX);
+	InputComponent->BindAxis("MoveY", this, &APlayerCharacter::MoveY);
+}
 
+void APlayerCharacter::MoveX(float AxisValue) {
+	MovementInput.X = AxisValue;
+}
+
+void APlayerCharacter::MoveY(float AxisValue) {
+	MovementInput.Y = AxisValue;
 }
 
 void APlayerCharacter::BeginOverlap(UPrimitiveComponent * thisguy, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)

@@ -25,11 +25,17 @@ public:
 
 	UFUNCTION() void BeginOverlap(class UPrimitiveComponent* thisguy, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	UFUNCTION() void EndOverlap(class UPrimitiveComponent* thisguy, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION() void MoveX(float AxisValue);
+	UFUNCTION() void MoveY(float AxisValue);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USphereComponent* SphereComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UStaticMeshComponent* Model;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USpringArmComponent* SpringArm;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UCameraComponent* Camera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay") float PlayerSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settingss") float PlayerSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settingss") float DefaultCameraDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") FVector MovementInput;
 
 };
