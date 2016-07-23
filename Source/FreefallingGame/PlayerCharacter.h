@@ -28,10 +28,8 @@ public:
 	UFUNCTION() void MoveX(float AxisValue);
 	UFUNCTION() void MoveY(float AxisValue);
 
-	UFUNCTION(BlueprintCallable, Category = "Player Controller")
-	void Teleport(FVector NewLocation);
-	UFUNCTION(BlueprintCallable, Category = "Player Controller")
-	void RedirectMomemtum(FVector Direction);
+	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Teleport(FVector NewLocation);
+	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void RedirectMomemtum(FVector Direction);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USphereComponent* SphereComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UStaticMeshComponent* Model;
