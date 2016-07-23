@@ -23,6 +23,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
+	UFUNCTION() void BeginOverlap(class UPrimitiveComponent* thisguy, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
+	UFUNCTION() void EndOverlap(class UPrimitiveComponent* thisguy, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USphereComponent* SphereComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UStaticMeshComponent* Model;
 	
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay") float PlayerSize;
+
 };
