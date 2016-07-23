@@ -11,7 +11,11 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PlayerSize = 45.0f;
-	DefaultCameraDistance = 1000.0f;
+	DefaultCameraDistance = 2000.0f;
+
+	AccelRate = 2500.0f;
+	MaxVelocity = 1000.0f;
+	Gravity = FVector(0.0f, 0.0f, -980.0f);
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
 	SphereComponent->SetupAttachment(RootComponent);
@@ -62,9 +66,31 @@ void APlayerCharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+
 	// Clamp movement input.
 	MovementInput = MovementInput.GetClampedToMaxSize(1.0f);
-	print(MovementInput.ToString());
+
+	// Apply acceleration due to movement inputs.
+	SphereComponent->AddForce(MovementInput.X*AccelRate*FVector::ForwardVector, NAME_None, true);
+
+	// Apply smooth deceleration.
+	FVector Velocity = SphereComponent->GetPhysicsLinearVelocity();
+	Velocity.Z = 0.0f;
+	float mult = FMath::Lerp(FMath::Pow(Velocity.Size() / MaxVelocity,4), FMath::Pow(Velocity.Size() / MaxVelocity, 0.125f),FMath::Clamp(Velocity.Size()/MaxVelocity,0.0f,1.0f));
+	SphereComponent->AddForce(-Velocity.GetSafeNormal()*AccelRate*mult, NAME_None, true);
+
+	// Apply gravity.
+	SphereComponent->AddForce(Gravity, NAME_None, true);
+
+}
+
+void APlayerCharacter::Teleport(FVector NewLocation) {
+	SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
+}
+
+void APlayerCharacter::RedirectMomemtum(FVector Direction) {
+	Direction = Direction.GetSafeNormal();
+	SphereComponent->SetPhysicsLinearVelocity(Direction*SphereComponent->GetPhysicsLinearVelocity().Size());
 }
 
 // Called to bind functionality to input
@@ -80,7 +106,7 @@ void APlayerCharacter::MoveX(float AxisValue) {
 }
 
 void APlayerCharacter::MoveY(float AxisValue) {
-	MovementInput.Y = AxisValue;
+	MovementInput.Z = AxisValue;
 }
 
 void APlayerCharacter::BeginOverlap(UPrimitiveComponent * thisguy, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
