@@ -41,6 +41,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticles;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticlesL;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticlesR;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float PlayerSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float DefaultCameraDistance;
