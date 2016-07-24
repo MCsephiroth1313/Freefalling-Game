@@ -11,12 +11,12 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PlayerSize = 45.0f;
-	DefaultCameraDistance = 2000.0f;
+	DefaultCameraDistance = 1500.0f;
 
 	AccelRate = 2000.0f;
 	MaxVelocity = 2000.0f;
 	Gravity = FVector(0.0f, 0.0f, -980.0f);
-	JetpackPower = 2000.0f;
+	JetpackPower = 1000.0f;
 
 	CanUseJetpack = true;
 
@@ -42,10 +42,12 @@ APlayerCharacter::APlayerCharacter()
 	const ConstructorHelpers::FObjectFinder<USkeletalMesh> PlayerMeshFinder(TEXT("/Game/Models/Player/RobotPackaged"));
 	Model->SetSkeletalMesh(PlayerMeshFinder.Object);
 	Model->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Model->AddLocalOffset(FVector(0.0f, 0.0f, -180.0f));
+	//Model->AddLocalOffset(FVector(0.0f, 0.0f, -180.0f));
+	Model->AddLocalOffset(FVector(0.0f, 0.0f, -80.0f));
 	Model->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
 	Model->SetRelativeScale3D(FVector(25.0f, 25.0, 25.0f));
-	Model->SetRelativeScale3D(FVector(50.0f, 50.0f, 50.0f));
+	Model->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
+	Model->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
 	Model->SetupAttachment(SphereComponent);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -105,6 +107,7 @@ void APlayerCharacter::Tick( float DeltaTime )
 		TargetYaw = -90.0f*FMath::Sign(MovementInput.X);
 	}
 
+	SpringArm->SetRelativeLocation(DefaultCameraDistance*FVector::RightVector);
 	Model->SetRelativeRotation(FRotator(0.0f, FMath::Lerp(Model->RelativeRotation.Yaw, TargetYaw, DeltaTime*10.0f), 0.0f));
 
 	// Clamp movement input.
@@ -175,8 +178,14 @@ void APlayerCharacter::MoveY(float AxisValue) {
 
 void APlayerCharacter::UseJetpack() {
 	if (CanUseJetpack) {
-		SphereComponent->SetPhysicsLinearVelocity(FVector::ForwardVector * (SphereComponent->GetPhysicsLinearVelocity() | FVector::ForwardVector));
-		SphereComponent->AddImpulse(JetpackPower*MovementInput.GetSafeNormal(), NAME_None, true);
+		if (FMath::Sign(SphereComponent->GetPhysicsLinearVelocity().Z) == FMath::Sign(Gravity.Z)) {
+			SphereComponent->SetPhysicsLinearVelocity(FVector::ForwardVector * (SphereComponent->GetPhysicsLinearVelocity() | FVector::ForwardVector));
+		}
+		if (MovementInput.IsNearlyZero()) {
+			SphereComponent->AddImpulse(JetpackPower*FMath::Sign(TargetYaw)*FVector::ForwardVector, NAME_None, true);
+		} else {
+			SphereComponent->AddImpulse(JetpackPower*MovementInput.GetSafeNormal(), NAME_None, true);
+		}
 		JetpackParticles->SetWorldRotation(MovementInput.GetSafeNormal().Rotation());
 		JetpackParticles->Deactivate();
 		JetpackParticles->Activate();
