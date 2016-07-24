@@ -11,3 +11,6 @@ Saved
 *.VC.db
 Content/The_Fountain.umap
 Content/KiteDemo
+*.ini
+Saved/Autosaves/PackageRestoreData.json
+Intermediate/CachedAssetRegistry.bin
