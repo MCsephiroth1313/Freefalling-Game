@@ -37,7 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Respawn();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USphereComponent* SphereComponent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UStaticMeshComponent* Model;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USkeletalMeshComponent* Model;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticles;
@@ -54,6 +54,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") FVector MovementInput;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool CanUseJetpack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool Freeze;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") float TargetYaw;
 
 
 };
