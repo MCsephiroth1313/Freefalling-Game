@@ -11,12 +11,12 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PlayerSize = 45.0f;
-	DefaultCameraDistance = 2000.0f;
+	DefaultCameraDistance = 1500.0f;
 
 	AccelRate = 2000.0f;
 	MaxVelocity = 2000.0f;
 	Gravity = FVector(0.0f, 0.0f, -980.0f);
-	JetpackPower = 2000.0f;
+	JetpackPower = 1000.0f;
 
 	CanUseJetpack = true;
 
@@ -42,8 +42,12 @@ APlayerCharacter::APlayerCharacter()
 	const ConstructorHelpers::FObjectFinder<USkeletalMesh> PlayerMeshFinder(TEXT("/Game/Models/Player/RobotPackaged"));
 	Model->SetSkeletalMesh(PlayerMeshFinder.Object);
 	Model->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//Model->AddLocalOffset(FVector(0.0f, 0.0f, -180.0f));
+	Model->AddLocalOffset(FVector(0.0f, 0.0f, -80.0f));
 	Model->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
 	Model->SetRelativeScale3D(FVector(25.0f, 25.0, 25.0f));
+	Model->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
+	Model->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
 	Model->SetupAttachment(SphereComponent);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -60,6 +64,20 @@ APlayerCharacter::APlayerCharacter()
 	JetpackParticles->SetTemplate(JetpackParticlesFinder.Object);
 	JetpackParticles->bAutoActivate = false;
 	JetpackParticles->SetupAttachment(SphereComponent);
+
+	JetpackParticlesR = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Jetpack Particles R"));
+	const ConstructorHelpers::FObjectFinder<UParticleSystem> JetpackParticlesFinderR(TEXT("/Game/Particles/Jetpack_Glow"));
+	JetpackParticlesR->SetTemplate(JetpackParticlesFinderR.Object);
+	JetpackParticlesR->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
+	JetpackParticlesR->bAutoActivate = true;
+	JetpackParticlesR->SetupAttachment(Model, "JetpackGlowR");
+
+	JetpackParticlesL = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Jetpack Particles L"));
+	const ConstructorHelpers::FObjectFinder<UParticleSystem> JetpackParticlesFinderL(TEXT("/Game/Particles/Jetpack_Glow"));
+	JetpackParticlesL->SetTemplate(JetpackParticlesFinderL.Object);
+	JetpackParticlesL->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
+	JetpackParticlesL->bAutoActivate = true;
+	JetpackParticlesL->SetupAttachment(Model, "JetpackGlowL");
 }
 
 // Called when the game starts or when spawned
@@ -89,6 +107,7 @@ void APlayerCharacter::Tick( float DeltaTime )
 		TargetYaw = -90.0f*FMath::Sign(MovementInput.X);
 	}
 
+	SpringArm->SetRelativeLocation(DefaultCameraDistance*FVector::RightVector);
 	Model->SetRelativeRotation(FRotator(0.0f, FMath::Lerp(Model->RelativeRotation.Yaw, TargetYaw, DeltaTime*10.0f), 0.0f));
 
 	// Clamp movement input.
@@ -115,12 +134,13 @@ void APlayerCharacter::Tick( float DeltaTime )
 
 void APlayerCharacter::CheckCollisions(float DeltaTime)
 {
-
-	FHitResult TraceResult;
-	FCollisionShape TraceShape = FCollisionShape::MakeSphere(PlayerSize/2.0f);
-	GetWorld()->SweepSingleByChannel(TraceResult, GetActorLocation(), GetActorLocation() + (PlayerSize + 10.0f)*Gravity.GetSafeNormal(), FQuat::Identity, ECC_Visibility, TraceShape);
-	if (TraceResult.bBlockingHit && (Gravity.GetSafeNormal() | TraceResult.ImpactNormal) < -0.7f) {
-		Respawn();
+	if (FMath::Sign(SphereComponent->GetPhysicsLinearVelocity().Z) == FMath::Sign(Gravity.Z)) {
+		FHitResult TraceResult;
+		FCollisionShape TraceShape = FCollisionShape::MakeSphere(PlayerSize / 2.0f);
+		GetWorld()->SweepSingleByChannel(TraceResult, GetActorLocation(), GetActorLocation() + (PlayerSize + 10.0f)*Gravity.GetSafeNormal(), FQuat::Identity, ECC_Visibility, TraceShape);
+		if (TraceResult.bBlockingHit && (Gravity.GetSafeNormal() | TraceResult.ImpactNormal) < -0.7f) {
+			Respawn();
+		}
 	}
 }
 
@@ -158,8 +178,14 @@ void APlayerCharacter::MoveY(float AxisValue) {
 
 void APlayerCharacter::UseJetpack() {
 	if (CanUseJetpack) {
-		SphereComponent->SetPhysicsLinearVelocity(FVector::ForwardVector * (SphereComponent->GetPhysicsLinearVelocity() | FVector::ForwardVector));
-		SphereComponent->AddImpulse(JetpackPower*MovementInput.GetSafeNormal(), NAME_None, true);
+		if (FMath::Sign(SphereComponent->GetPhysicsLinearVelocity().Z) == FMath::Sign(Gravity.Z)) {
+			SphereComponent->SetPhysicsLinearVelocity(FVector::ForwardVector * (SphereComponent->GetPhysicsLinearVelocity() | FVector::ForwardVector));
+		}
+		if (MovementInput.IsNearlyZero()) {
+			SphereComponent->AddImpulse(JetpackPower*FMath::Sign(TargetYaw)*FVector::ForwardVector, NAME_None, true);
+		} else {
+			SphereComponent->AddImpulse(JetpackPower*MovementInput.GetSafeNormal(), NAME_None, true);
+		}
 		JetpackParticles->SetWorldRotation(MovementInput.GetSafeNormal().Rotation());
 		JetpackParticles->Deactivate();
 		JetpackParticles->Activate();
