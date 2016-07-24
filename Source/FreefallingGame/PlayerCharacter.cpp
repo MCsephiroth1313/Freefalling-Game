@@ -79,7 +79,14 @@ APlayerCharacter::APlayerCharacter()
 	JetpackParticlesL->bAutoActivate = true;
 	JetpackParticlesL->SetupAttachment(Model, "JetpackGlowL");
 
-	DeathCount = 0;
+	const ConstructorHelpers::FObjectFinder<USoundCue> DeathSoundFinder(TEXT("/Game/Audio/DeathSound_Cue"));
+	DeathSound = DeathSoundFinder.Object;
+	const ConstructorHelpers::FObjectFinder<USoundCue> FallingSoundFinder(TEXT("/Game/Audio/falling"));
+	FallingSound = FallingSoundFinder.Object;
+	const ConstructorHelpers::FObjectFinder<USoundCue> JetpackSoundFinder(TEXT("/Game/Audio/jetpack"));
+	JetpackSound = JetpackSoundFinder.Object;
+	const ConstructorHelpers::FObjectFinder<USoundCue> PortalSoundFinder(TEXT("/Game/Audio/portalsound"));
+	PortalSound = PortalSoundFinder.Object;
 }
 
 // Called when the game starts or when spawned
@@ -89,6 +96,7 @@ void APlayerCharacter::BeginPlay()
 	
 	RespawnPoint = GetActorLocation();
 	TargetYaw = -90.0f;
+	DeathCount = 0;
 }
 
 void print(FString text) {
@@ -154,6 +162,7 @@ void APlayerCharacter::CheckCollisions(float DeltaTime)
 		GetWorld()->SweepSingleByChannel(TraceResult, GetActorLocation(), GetActorLocation() + (PlayerSize + 1000.0f)*Gravity.GetSafeNormal(), FQuat::Identity, ECC_Visibility, TraceShape);
 		if (TraceResult.bBlockingHit && (Gravity.GetSafeNormal() | TraceResult.ImpactNormal) < -0.7f && TraceResult.ImpactPoint.Z > GetActorLocation().Z - PlayerSize - 50.0f) {
 			IsDead = true;
+			UGameplayStatics::PlaySound2D(this, DeathSound);
 			GetWorldTimerManager().SetTimer(DeathTimer, this, &APlayerCharacter::Respawn, 1.0f);
 		}//
 	}
@@ -169,6 +178,7 @@ void APlayerCharacter::Respawn() {
 
 void APlayerCharacter::Teleport(FVector NewLocation) {
 	SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
+	UGameplayStatics::PlaySound2D(this, PortalSound);
 }
 
 void APlayerCharacter::RedirectMomemtum(FVector Direction) {
@@ -217,6 +227,7 @@ void APlayerCharacter::UseJetpack() {
 		IsJetpack = true;
 		GetWorldTimerManager().SetTimer(JetpackTimer, this, &APlayerCharacter::JetpackAnimEnd, 0.25f);
 		CanUseJetpack = false;
+		UGameplayStatics::PlaySound2D(this, JetpackSound);
 	}
 }
 

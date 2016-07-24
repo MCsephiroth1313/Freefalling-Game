@@ -47,6 +47,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticlesL;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticlesR;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* DeathSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* JetpackSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* FallingSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* PortalSound;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float PlayerSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float DefaultCameraDistance;
 
