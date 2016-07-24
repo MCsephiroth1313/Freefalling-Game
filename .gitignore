@@ -14,3 +14,6 @@ Content/KiteDemo
 *.ini
 Saved/Autosaves/PackageRestoreData.json
 Intermediate/CachedAssetRegistry.bin
+Intermediate/CachedAssetRegistry.bin
+Intermediate/CachedAssetRegistry.bin
+*.ini
