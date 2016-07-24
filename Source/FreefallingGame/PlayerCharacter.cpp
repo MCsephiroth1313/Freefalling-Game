@@ -78,6 +78,8 @@ APlayerCharacter::APlayerCharacter()
 	JetpackParticlesL->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
 	JetpackParticlesL->bAutoActivate = true;
 	JetpackParticlesL->SetupAttachment(Model, "JetpackGlowL");
+
+	DeathCount = 0;
 }
 
 // Called when the game starts or when spawned
@@ -148,6 +150,7 @@ void APlayerCharacter::Respawn() {
 	SetActorLocation(RespawnPoint, false, nullptr, ETeleportType::TeleportPhysics);
 	SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 	CanUseJetpack = true;
+	DeathCount++;
 }
 
 void APlayerCharacter::Teleport(FVector NewLocation) {

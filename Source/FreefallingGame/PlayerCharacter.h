@@ -57,6 +57,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool CanUseJetpack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool Freeze;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") float TargetYaw;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") int DeathCount;
 
 };
