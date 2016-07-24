@@ -32,6 +32,9 @@ public:
 
 	UFUNCTION() void CheckCollisions(float DeltaTime);
 
+	UFUNCTION() void DeathAnimEnd();
+	UFUNCTION() void JetpackAnimEnd();
+
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Teleport(FVector NewLocation);
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void RedirectMomemtum(FVector Direction);
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Respawn();
@@ -58,5 +61,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool Freeze;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") float TargetYaw;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") int DeathCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool IsDead;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool IsJetpack;
+
+	FTimerHandle DeathTimer;
+	FTimerHandle JetpackTimer;
 
 };

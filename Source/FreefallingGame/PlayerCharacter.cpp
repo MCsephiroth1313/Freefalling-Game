@@ -96,11 +96,21 @@ void print(FString text) {
 }
 
 // Called every frame
-void APlayerCharacter::Tick( float DeltaTime )
+void APlayerCharacter::Tick(float DeltaTime)
 {
-	Super::Tick( DeltaTime );
+	Super::Tick(DeltaTime);
 
-	if (Freeze) {
+	if (IsDead || IsJetpack) {
+		FRotator r = Model->GetComponentRotation();
+		r.Roll = 0.0f;
+		Model->SetWorldRotation(r);
+	} else {
+		FRotator r = Model->GetComponentRotation();
+		r.Roll += DeltaTime*180.0f;
+		Model->SetWorldRotation(r);
+	}
+
+	if (Freeze||IsDead) {
 		SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 		return;
 	}
@@ -110,7 +120,9 @@ void APlayerCharacter::Tick( float DeltaTime )
 	}
 
 	SpringArm->SetRelativeLocation(DefaultCameraDistance*FVector::RightVector);
-	Model->SetRelativeRotation(FRotator(0.0f, FMath::Lerp(Model->RelativeRotation.Yaw, TargetYaw, DeltaTime*10.0f), 0.0f));
+	FRotator p = Model->RelativeRotation;
+	p.Yaw = FMath::Lerp(Model->RelativeRotation.Yaw, TargetYaw, DeltaTime*10.0f);
+	Model->SetRelativeRotation(p);
 
 	// Clamp movement input.
 	MovementInput = MovementInput.GetClampedToMaxSize(1.0f);
@@ -136,13 +148,14 @@ void APlayerCharacter::Tick( float DeltaTime )
 
 void APlayerCharacter::CheckCollisions(float DeltaTime)
 {
-	if (FMath::Sign(SphereComponent->GetPhysicsLinearVelocity().Z) == FMath::Sign(Gravity.Z)) {
+	if (FMath::Sign(SphereComponent->GetPhysicsLinearVelocity().Z) == FMath::Sign(Gravity.Z) && !IsDead) {
 		FHitResult TraceResult;
 		FCollisionShape TraceShape = FCollisionShape::MakeSphere(PlayerSize / 2.0f);
-		GetWorld()->SweepSingleByChannel(TraceResult, GetActorLocation(), GetActorLocation() + (PlayerSize + 10.0f)*Gravity.GetSafeNormal(), FQuat::Identity, ECC_Visibility, TraceShape);
-		if (TraceResult.bBlockingHit && (Gravity.GetSafeNormal() | TraceResult.ImpactNormal) < -0.7f) {
-			Respawn();
-		}
+		GetWorld()->SweepSingleByChannel(TraceResult, GetActorLocation(), GetActorLocation() + (PlayerSize + 1000.0f)*Gravity.GetSafeNormal(), FQuat::Identity, ECC_Visibility, TraceShape);
+		if (TraceResult.bBlockingHit && (Gravity.GetSafeNormal() | TraceResult.ImpactNormal) < -0.7f && TraceResult.ImpactPoint.Z > GetActorLocation().Z - PlayerSize - 50.0f) {
+			IsDead = true;
+			GetWorldTimerManager().SetTimer(DeathTimer, this, &APlayerCharacter::Respawn, 1.0f);
+		}//
 	}
 }
 
@@ -150,6 +163,7 @@ void APlayerCharacter::Respawn() {
 	SetActorLocation(RespawnPoint, false, nullptr, ETeleportType::TeleportPhysics);
 	SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 	CanUseJetpack = true;
+	IsDead = false;
 	DeathCount++;
 }
 
@@ -160,6 +174,14 @@ void APlayerCharacter::Teleport(FVector NewLocation) {
 void APlayerCharacter::RedirectMomemtum(FVector Direction) {
 	Direction = Direction.GetSafeNormal();
 	SphereComponent->SetPhysicsLinearVelocity(Direction*SphereComponent->GetPhysicsLinearVelocity().Size());
+}
+
+void APlayerCharacter::DeathAnimEnd() {
+	IsDead = false;
+}
+
+void APlayerCharacter::JetpackAnimEnd() {
+	IsJetpack = false;
 }
 
 // Called to bind functionality to input
@@ -192,6 +214,8 @@ void APlayerCharacter::UseJetpack() {
 		JetpackParticles->SetWorldRotation(MovementInput.GetSafeNormal().Rotation());
 		JetpackParticles->Deactivate();
 		JetpackParticles->Activate();
+		IsJetpack = true;
+		GetWorldTimerManager().SetTimer(JetpackTimer, this, &APlayerCharacter::JetpackAnimEnd, 0.25f);
 		CanUseJetpack = false;
 	}
 }

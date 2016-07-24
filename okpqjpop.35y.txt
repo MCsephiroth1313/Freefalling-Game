@@ -1,0 +1,51 @@
+﻿Merge remote-tracking branch 'origin/master'
+
+# Conflicts:
+#	Saved/Autosaves/PackageRestoreData.json
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please remove the file
+#	.git/MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch and 'origin/master' have diverged,
+# and have 1 and 3 different commits each, respectively.
+#   (use "git pull" to merge the remote branch into yours)
+#
+# All conflicts fixed but you are still merging.
+#
+# Changes to be committed:
+#	modified:   .gitignore
+#	new file:   Content/Audio/267716__robinhood76__05648-scifi-flare-whizz.uasset
+#	new file:   Content/Audio/267716__robinhood76__05648-scifi-flare-whizz.wav
+#	new file:   Content/Audio/33943__scarbelly25__flamewind.uasset
+#	new file:   Content/Audio/33943__scarbelly25__flamewind.wav
+#	new file:   Content/Audio/94127__bmaczero__clank1.uasset
+#	new file:   Content/Audio/94127__bmaczero__clank1.wav
+#	new file:   Content/Audio/Tech House prototype.3.mp3
+#	new file:   Content/Audio/Tech_House_prototype_3.uasset
+#	modified:   Content/Blueprints/FreeFallPlayerController.uasset
+#	new file:   Content/Maps/Untitled.umap
+#	modified:   Content/Materials/Background.uasset
+#	modified:   Content/Models/Player/1.uasset
+#	modified:   Content/Models/Player/2.uasset
+#	modified:   Content/Models/Player/3.uasset
+#	modified:   Content/Models/Player/4.uasset
+#	new file:   Content/Models/Player/DrunkRobotFalling.uasset
+#	new file:   Content/Models/Player/DrunkRobot_AnimBP.uasset
+#	new file:   Content/Models/Player/DrunkRobot_Death.uasset
+#	new file:   Content/Models/Player/DrunkRobot_Falling.uasset
+#	new file:   Content/Models/Player/DrunkRobot_JetpackThrust.uasset
+#	modified:   Intermediate/CachedAssetRegistry.bin
+#	modified:   Intermediate/ReimportCache/3688439234.bin
+#	modified:   Saved/Config/Windows/Editor.ini
+#	modified:   Saved/Config/Windows/EditorPerProjectUserSettings.ini
+#	modified:   Saved/Config/Windows/Engine.ini
+#	modified:   Source/FreefallingGame/PlayerCharacter.cpp
+#	modified:   Source/FreefallingGame/PlayerCharacter.h
+#
+
