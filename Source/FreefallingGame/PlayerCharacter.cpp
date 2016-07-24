@@ -38,10 +38,12 @@ APlayerCharacter::APlayerCharacter()
 	SphereComponent->bShouldUpdatePhysicsVolume = true;
 	RootComponent = SphereComponent;
 
-	Model = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Player Model"));
-	const ConstructorHelpers::FObjectFinder<UStaticMesh> PlayerMeshFinder(TEXT("/Game/Models/Player/PlayerModel"));
-	Model->SetStaticMesh(PlayerMeshFinder.Object);
+	Model = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Player Model"));
+	const ConstructorHelpers::FObjectFinder<USkeletalMesh> PlayerMeshFinder(TEXT("/Game/Models/Player/RobotPackaged"));
+	Model->SetSkeletalMesh(PlayerMeshFinder.Object);
 	Model->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Model->AddLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
+	Model->SetRelativeScale3D(FVector(25.0f, 25.0, 25.0f));
 	Model->SetupAttachment(SphereComponent);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -66,7 +68,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	RespawnPoint = GetActorLocation();
-
+	TargetYaw = -90.0f;
 }
 
 void print(FString text) {
@@ -82,6 +84,12 @@ void APlayerCharacter::Tick( float DeltaTime )
 		SphereComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
 		return;
 	}
+
+	if (MovementInput.X != 0.0f) {
+		TargetYaw = -90.0f*FMath::Sign(MovementInput.X);
+	}
+
+	Model->SetRelativeRotation(FRotator(0.0f, FMath::Lerp(Model->RelativeRotation.Yaw, TargetYaw, DeltaTime*10.0f), 0.0f));
 
 	// Clamp movement input.
 	MovementInput = MovementInput.GetClampedToMaxSize(1.0f);
