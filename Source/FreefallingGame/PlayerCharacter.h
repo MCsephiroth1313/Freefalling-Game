@@ -32,6 +32,9 @@ public:
 
 	UFUNCTION() void CheckCollisions(float DeltaTime);
 
+	UFUNCTION() void DeathAnimEnd();
+	UFUNCTION() void JetpackAnimEnd();
+
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Teleport(FVector NewLocation);
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void RedirectMomemtum(FVector Direction);
 	UFUNCTION(BlueprintCallable, Category = "Free Fall Player Functions") void Respawn();
@@ -43,6 +46,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticles;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticlesL;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") UParticleSystemComponent* JetpackParticlesR;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* DeathSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* JetpackSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* FallingSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components") USoundCue* PortalSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float PlayerSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings") float DefaultCameraDistance;
@@ -57,6 +65,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool CanUseJetpack;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool Freeze;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") float TargetYaw;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") int DeathCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool IsDead;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State") bool IsJetpack;
 
+	FTimerHandle DeathTimer;
+	FTimerHandle JetpackTimer;
 
 };
